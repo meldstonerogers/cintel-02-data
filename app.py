@@ -1,7 +1,7 @@
 import plotly.express as px
 from shiny.express import input, ui
 from shiny import render
-from shinywidgets import render_plotly
+from shinywidgets import render_widget
 import palmerpenguins  # This package provides the Palmer Penguins dataset
 from shinyswatch import theme
 
@@ -68,17 +68,21 @@ with ui.layout_columns():
             ui.card_header("Data Table")
             
             @render.data_frame  
-            def penguins_table():
-                return render.DataTable(
-                    penguins_df, selection_mode="row", width="400px", height="250px"
-            )  
+            def plot1():
+                selected_species = input.selected_species_list()
+                if selected_species:
+                    filtered = penguins_df[penguins_df["species"].isin(selected_species)]
+                return render.DataGrid(filtered)
 
     with ui.card(full_screen=True):
             ui.card_header("Data Grid")
         
             @render.data_frame  
-            def penguins_grid():
-                return render.DataGrid(penguins_df) 
+            def plot2():
+                selected_species = input.selected_species_list()
+                if selected_species:
+                    filtered = penguins_df[penguins_df["species"].isin(selected_species)]
+                return render.DataTable(filtered)
                 
 #Seaborn Histogram, showing all species 
 
@@ -109,3 +113,4 @@ with ui.layout_columns():
         # Create a Plotly scatterplot using Plotly Express
         # Call px.scatter() function
         # Pass in six arguments:
+
