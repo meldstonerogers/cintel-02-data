@@ -1,7 +1,7 @@
 import plotly.express as px
 from shiny.express import input, ui
 from shiny import render
-from shinywidgets import render_widget
+from shinywidgets import render_widget, render_plotly
 import palmerpenguins  # This package provides the Palmer Penguins dataset
 from shinyswatch import theme
 import seaborn as sns
@@ -9,7 +9,7 @@ import seaborn as sns
 # Use the built-in function to load the Palmer Penguins dataset
 penguins_df = palmerpenguins.load_penguins()
 
-ui.page_opts(title="Melissa's Penguin Practice Data", fillable=True, theme=theme.morph)
+ui.page_opts(title="Melissa's Palmer's Penguin Data Review", fillable=True, theme=theme.morph)
 
 # Add a Shiny UI sidebar for user interaction
 # Use a with block to add content to the sidebar
@@ -19,9 +19,20 @@ with ui.sidebar(bg="#8fb597"):
         ui.hr(),  # Use ui.hr() to add a horizontal rule to the sidebar 
         style="border-top: 2px solid #495569; margin: 10px 0;"  # Custom style for the horizontal rule
     ) 
-#ADD ADDITIONAL ATTRIBUTES 
 
+    # Use ui.input_checkbox_group() to create a checkbox group input to filter the species
+    ui.input_checkbox_group(  
+        "selected_species_list",  
+        "Select One or More Species:",
+        choices=["Adelie", "Chinstrap", "Gentoo"],
+        selected=["Adelie", "Chinstrap", "Gentoo"],
+        inline=False 
+    )
 
+    # Dropdown for selecting x and y axes for the scatter plot
+    ui.input_selectize("x_column_scatter", "Select X Axis Column:", ["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"])
+    ui.input_selectize("y_column_scatter", "Select Y Axis Column:", ["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"])
+    
     # Use ui.input_selectize() to create a dropdown input to choose a column
     ui.input_selectize(  
         "selected_attribute",  
@@ -46,15 +57,7 @@ with ui.sidebar(bg="#8fb597"):
     @render.text
     def slider():
         return f"{input.slider()}"
-
-    # Use ui.input_checkbox_group() to create a checkbox group input to filter the species
-    ui.input_checkbox_group(  
-        "selected_species_list",  
-        "Select One or More Species:",
-        choices=["Adelie", "Chinstrap", "Gentoo"],
-        selected=["Adelie", "Chinstrap", "Gentoo"],
-        inline=False 
-    )  
+  
 
     @render.text
     def value():
@@ -125,14 +128,30 @@ with ui.layout_columns():
                 return ax 
 
 #Plotly Scatterplot, showing all species 
-#with ui.card(full_screen=True):
+with ui.card(full_screen=True):
+    ui.card_header("Plotly Scatterplot: Species")
+    @render_widget 
+    def penguins_scatter_plot():  
+        x_column_name = input.x_column_scatter()
+        y_column_name = input.y_column_scatter()
 
-   # ui.card_header("Plotly Scatterplot: Species")
+        # Filter the penguins dataset based on selected species
+        selected_species_list = input.selected_species_list()
+        filtered_penguins = penguins_df[penguins_df["species"].isin(selected_species_list)]
 
-   # @render_plotly
-   # def plotly_scatterplot():
-        # Create a Plotly scatterplot using Plotly Express
-        # Call px.scatter() function
-        # Pass in six arguments:
+        # Create scatter plot
+        scatterplot = px.scatter(
+            data_frame=filtered_penguins,
+            x=x_column_name,  # X-axis based on user selection
+            y=y_column_name,  # Y-axis based on user selection
+            color="species",  # Color points by species
+            title=f"{x_column_name} vs {y_column_name}",
+            labels={x_column_name: x_column_name, y_column_name: y_column_name}  # Custom labels for axes
+        ).update_layout(
+            title={"text": f"{x_column_name} vs {y_column_name}", "x": 0.5},
+            yaxis_title=y_column_name,
+            xaxis_title=x_column_name,
+        )
 
+        return scatterplot
 
