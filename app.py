@@ -32,13 +32,6 @@ with ui.sidebar(bg="#8fb597"):
     # Dropdown for selecting x and y axes for the scatter plot
     ui.input_selectize("x_column_scatter", "Select X Axis Column:", ["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"])
     ui.input_selectize("y_column_scatter", "Select Y Axis Column:", ["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"])
-    
-    # Use ui.input_selectize() to create a dropdown input to choose a column
-    ui.input_selectize(  
-        "selected_attribute",  
-        "Select an option below:",  
-        ["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"],  
-    )  
 
     @render.text
     def select():
@@ -154,4 +147,3 @@ with ui.card(full_screen=True):
         )
 
         return scatterplot
-
