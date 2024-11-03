@@ -4,6 +4,7 @@ from shiny import render
 from shinywidgets import render_widget
 import palmerpenguins  # This package provides the Palmer Penguins dataset
 from shinyswatch import theme
+import seaborn as sns
 
 # Use the built-in function to load the Palmer Penguins dataset
 penguins_df = palmerpenguins.load_penguins()
@@ -14,7 +15,10 @@ ui.page_opts(title="Melissa's Penguin Practice Data", fillable=True, theme=theme
 # Use a with block to add content to the sidebar
 with ui.sidebar(bg="#8fb597"):  
     ui.h2("Sidebar") # Use the ui.h2() function to add a 2nd level header to the sidebar    
-    ui.hr(), # Use ui.hr() to add a horizontal rule to the sidebar 
+    ui.div(
+        ui.hr(),  # Use ui.hr() to add a horizontal rule to the sidebar 
+        style="border-top: 2px solid #495569; margin: 10px 0;"  # Custom style for the horizontal rule
+    ) 
 #ADD ADDITIONAL ATTRIBUTES 
 
 
@@ -30,7 +34,7 @@ with ui.sidebar(bg="#8fb597"):
         return f"{input.selectize()}"
     
     # Use ui.input_numeric() to create a numeric input for the number of Plotly histogram bins
-    ui.input_numeric("plotly_bin_count", "Plotly Bin Count", 1, min=1, max=50)  
+    ui.input_numeric("plotly_bin_count", "Plotly Bin Count", 20, min=1, max=100)  
 
     @render.text
     def numeric():
@@ -83,25 +87,42 @@ with ui.layout_columns():
                 if selected_species:
                     filtered = penguins_df[penguins_df["species"].isin(selected_species)]
                 return render.DataTable(filtered)
-                
-#Seaborn Histogram, showing all species 
 
 with ui.layout_columns():
     #Plotly Histogram, showing all species 
     with ui.card(full_screen=True):
             ui.card_header("Plotly Histogram")
             @render_widget  
-            def plot():  
+            def plot3():  
+                filtered_df = penguins_df[penguins_df["species"].isin(input.selected_species_list())]  # Filter by selected species
                 histogram = px.histogram(
-                    penguins_df,
+                    filtered_df,
                     x="body_mass_g",
                     nbins=input.plotly_bin_count(),
+                    color="species",
                 ).update_layout(
                     title={"text": "Penguin Mass", "x": 0.5},
                     yaxis_title="Count",
                     xaxis_title="Body Mass (g)",
                 )  
                 return histogram
+
+    #Seaborn Histogram, showing all species 
+    with ui.card(full_screen=True):
+            ui.card_header("Seaborn Histogram")
+            @render.plot(alt="A Seaborn histogram on penguin body mass in grams.")  
+            def plot4():
+                filtered_df = penguins_df[penguins_df["species"].isin(input.selected_species_list())]  # Filter by selected species
+                ax = sns.histplot(
+                    data=filtered_df, 
+                    x="body_mass_g", 
+                    bins=input.seaborn_bin_count(), 
+                    hue="species",
+                    kde=False,)  
+                ax.set_title("Penguins Mass")
+                ax.set_xlabel("Mass (g)")
+                ax.set_ylabel("Count")
+                return ax 
 
 #Plotly Scatterplot, showing all species 
 #with ui.card(full_screen=True):
@@ -113,4 +134,5 @@ with ui.layout_columns():
         # Create a Plotly scatterplot using Plotly Express
         # Call px.scatter() function
         # Pass in six arguments:
+
 
