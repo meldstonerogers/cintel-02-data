@@ -79,9 +79,25 @@ with ui.layout_columns():
             @render.data_frame  
             def penguins_grid():
                 return render.DataGrid(penguins_df) 
-
-#Plotly Histogram, showing all species 
+                
 #Seaborn Histogram, showing all species 
+
+with ui.layout_columns():
+    #Plotly Histogram, showing all species 
+    with ui.card(full_screen=True):
+            ui.card_header("Plotly Histogram")
+            @render_widget  
+            def plot():  
+                histogram = px.histogram(
+                    penguins_df,
+                    x="body_mass_g",
+                    nbins=input.plotly_bin_count(),
+                ).update_layout(
+                    title={"text": "Penguin Mass", "x": 0.5},
+                    yaxis_title="Count",
+                    xaxis_title="Body Mass (g)",
+                )  
+                return histogram
 
 #Plotly Scatterplot, showing all species 
 #with ui.card(full_screen=True):
